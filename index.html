@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blind Spotify Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body {
+      background: #0d0d0d;
+      color: white;
+      text-align: center;
+      font-family: sans-serif;
+      padding: 1rem;
+    }
+    #reader {
+      margin: auto;
+      max-width: 320px;
+    }
+    #player {
+      display: none;
+      margin-top: 1rem;
+    }
+    button {
+      background: #1db954;
+      border: none;
+      padding: 1rem;
+      color: white;
+      border-radius: 1rem;
+      font-size: 1.2rem;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Blind Spotify Scanner</h1>
+  <p>Scan een Spotify code zonder de titel te zien!</p>
+  <div id="reader" style="width: 300px;"></div>
+  <iframe id="player" style="display:none; margin-top:20px;" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+  <button id="reveal" style="display:none;">Toon track info</button>
+  <p id="trackInfo" style="margin-top:1rem;"></p>
+
+  <script>
+    let scannedUrl = "";
+
+    function onScanSuccess(decodedText) {
+      if (decodedText.includes("open.spotify.com/track/")) {
+        scannedUrl = decodedText;
+        document.getElementById("reader").style.display = "none";
+        const embedCode = decodedText.split("track/")[1].split("?")[0];
+        const player = document.getElementById("player");
+        player.src = `https://open.spotify.com/embed/track/${embedCode}?utm_source=generator&theme=0`;
+        player.style.display = "block";
+        document.getElementById("reveal").style.display = "inline-block";
+      } else {
+        alert("Geen geldige Spotify track code!");
+      }
+    }
+
+    function onScanError(errorMessage) {
+      console.warn(errorMessage);
+    }
+
+    const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
+    html5QrcodeScanner.render(onScanSuccess, onScanError);
+
+    document.getElementById("reveal").addEventListener("click", () => {
+      document.getElementById("trackInfo").innerText = `Je scande: ${scannedUrl}`;
+    });
+  </script>
+</body>
+</html>
