@@ -80,10 +80,13 @@
       }
     };
 
-    function onScanSuccess(decodedText) {
+    async function onScanSuccess(decodedText) {
       if (decodedText.includes("open.spotify.com/track/")) {
         scannedUrl = decodedText;
         const trackId = decodedText.split("track/")[1].split("?")[0];
+
+        // Stop scanner direct na succesvolle scan
+        await scanner.clear();
 
         fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
           method: "PUT",
@@ -107,7 +110,6 @@
       document.getElementById("reveal").style.display = "none";
       document.getElementById("trackInfo").innerText = "";
 
-      scanner.clear();
       scanner.render(onScanSuccess, (err) => console.warn(err));
     });
   </script>
