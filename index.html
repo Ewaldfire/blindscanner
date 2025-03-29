@@ -41,6 +41,7 @@
     const redirectUri = window.location.href;
     let accessToken = "";
     let scannedUrl = "";
+    let scanner;
 
     document.getElementById("login").addEventListener("click", () => {
       const scope = "streaming user-read-email user-read-private user-modify-playback-state";
@@ -58,7 +59,7 @@
           document.getElementById("login").style.display = "none";
           document.getElementById("reader").style.display = "block";
 
-          const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
+          scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
           scanner.render(onScanSuccess, (err) => console.warn(err));
         }
       }
@@ -85,6 +86,12 @@
 
     document.getElementById("reveal").addEventListener("click", () => {
       document.getElementById("trackInfo").innerText = `Je scande: ${scannedUrl}`;
+      document.getElementById("reader").style.display = "block";
+      document.getElementById("reveal").style.display = "none";
+      document.getElementById("trackInfo").innerText = "";
+
+      scanner.clear();
+      scanner.render(onScanSuccess, (err) => console.warn(err));
     });
   </script>
 </body>
