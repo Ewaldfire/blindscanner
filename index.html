@@ -34,6 +34,7 @@
   <button id="login">Login met Spotify</button>
   <div id="reader" style="display:none;"></div>
   <button id="reveal" style="display:none;">Toon track info</button>
+  <button id="rescan" style="display:none;">Scan opnieuw</button>
   <p id="trackInfo" style="margin-top:1rem;"></p>
 
   <script>
@@ -99,6 +100,7 @@
 
         document.getElementById("reader").style.display = "none";
         document.getElementById("reveal").style.display = "inline-block";
+        document.getElementById("rescan").style.display = "inline-block";
       } else {
         alert("Geen geldige Spotify track QR code!");
       }
@@ -106,8 +108,13 @@
 
     document.getElementById("reveal").addEventListener("click", () => {
       document.getElementById("trackInfo").innerText = `Je scande: ${scannedUrl}`;
+      document.getElementById("reveal").style.display = "none";
+    });
+
+    document.getElementById("rescan").addEventListener("click", () => {
       document.getElementById("reader").style.display = "block";
       document.getElementById("reveal").style.display = "none";
+      document.getElementById("rescan").style.display = "none";
       document.getElementById("trackInfo").innerText = "";
 
       scanner.render(onScanSuccess, (err) => console.warn(err));
