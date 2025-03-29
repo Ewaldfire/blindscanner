@@ -128,9 +128,11 @@
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       const data = await response.json();
+      const year = data.album.release_date ? data.album.release_date.substring(0, 4) : "Onbekend";
       document.getElementById("trackInfo").innerHTML = `
         <strong>${data.name}</strong><br>
         ${data.artists.map(a => a.name).join(", ")}<br>
+        📅 ${year}<br>
         <img src="${data.album.images[0].url}" alt="Album Cover">
       `;
       document.getElementById("reveal").style.display = "none";
