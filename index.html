@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blind Spotify Scanner</title>
+  <title>Blind Spotify Scanner - Full</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body {
@@ -16,10 +16,6 @@
     #reader {
       margin: auto;
       max-width: 320px;
-    }
-    #player {
-      display: none;
-      margin-top: 1rem;
     }
     button {
       background: #1db954;
@@ -34,35 +30,58 @@
 </head>
 <body>
   <h1>Blind Spotify Scanner</h1>
-  <p>Scan een Spotify code zonder de titel te zien!</p>
-  <div id="reader" style="width: 300px;"></div>
-  <iframe id="player" style="display:none; margin-top:20px;" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+  <p id="status">Niet ingelogd</p>
+  <button id="login">Login met Spotify</button>
+  <div id="reader" style="display:none;"></div>
   <button id="reveal" style="display:none;">Toon track info</button>
   <p id="trackInfo" style="margin-top:1rem;"></p>
 
   <script>
+    const clientId = "aa13b1ec09a043a0b8bb52c254a00ace";
+    const redirectUri = window.location.href;
+    let accessToken = "";
     let scannedUrl = "";
+
+    document.getElementById("login").addEventListener("click", () => {
+      const scope = "streaming user-read-email user-read-private user-modify-playback-state";
+      const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${encodeURIComponent(scope)}&response_type=token&show_dialog=true`;
+      window.location.href = authUrl;
+    });
+
+    window.onload = () => {
+      if (window.location.hash) {
+        const hash = window.location.hash.substring(1);
+        const params = new URLSearchParams(hash);
+        accessToken = params.get("access_token");
+        if (accessToken) {
+          document.getElementById("status").innerText = "Ingelogd";
+          document.getElementById("login").style.display = "none";
+          document.getElementById("reader").style.display = "block";
+
+          const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
+          scanner.render(onScanSuccess, (err) => console.warn(err));
+        }
+      }
+    };
 
     function onScanSuccess(decodedText) {
       if (decodedText.includes("open.spotify.com/track/")) {
         scannedUrl = decodedText;
+        const trackId = decodedText.split("track/")[1].split("?")[0];
+        fetch(`https://api.spotify.com/v1/me/player/play`, {
+          method: "PUT",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ uris: [`spotify:track:${trackId}`] })
+        });
         document.getElementById("reader").style.display = "none";
-        const embedCode = decodedText.split("track/")[1].split("?")[0];
-        const player = document.getElementById("player");
-        player.src = `https://open.spotify.com/embed/track/${embedCode}?utm_source=generator&theme=0`;
-        player.style.display = "block";
         document.getElementById("reveal").style.display = "inline-block";
       } else {
-        alert("Geen geldige Spotify track code!");
+        alert("Geen geldige Spotify track QR code!");
       }
     }
-
-    function onScanError(errorMessage) {
-      console.warn(errorMessage);
-    }
-
-    const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
-    html5QrcodeScanner.render(onScanSuccess, onScanError);
 
     document.getElementById("reveal").addEventListener("click", () => {
       document.getElementById("trackInfo").innerText = `Je scande: ${scannedUrl}`;
