@@ -39,6 +39,9 @@
 </head>
 <body>
   <h1>Blind Spotify Scanner</h1>
+  <p>Welkom bij Blind Scanner! 🎶</p>
+  <p>1️⃣ Login met Spotify<br>2️⃣ Scan een QR-code met je achtercamera<br>3️⃣ Raad de track en onthul daarna de titel</p>
+
   <p id="status">Niet ingelogd</p>
   <button id="login">Login met Spotify</button>
   <div id="reader" style="display:none;"></div>
@@ -90,7 +93,15 @@
             }
           });
 
-          scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
+          scanner = new Html5QrcodeScanner("reader", {
+            fps: 10,
+            qrbox: 250,
+            experimentalFeatures: {
+              useBarCodeDetectorIfSupported: true
+            },
+            facingMode: "environment"
+          }, false);
+
           scanner.render(onScanSuccess, (err) => console.warn(err));
         }
       }
